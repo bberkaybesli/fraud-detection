@@ -310,7 +310,3 @@ Redis tarafında sadece set (blacklist) yerine Stream (Pub/Sub) mimarisini dahil
 - NoSQL proje rehberi: [FINALE-PROJE-NOSQL.md](../../../FINALE-PROJE-NOSQL.md)
 - Production şablonu: [FINALE-PROJE-NOSQL-PROD-DOKUMANTASYON.md](../../../FINALE-PROJE-NOSQL-PROD-DOKUMANTASYON.md)
 - Neo4j Cypher Manual ve Redis Docs.
-
----
-
-<sub>🤖 Bu raporda AI asistan kullanılmış olabilir, ancak tüm tasarım kararları ve metrikler öğrenci tarafından doğrulanmıştır. Sunumda raporun her satırı savunulacaktır.</sub>

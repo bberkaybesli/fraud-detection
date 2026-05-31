@@ -243,10 +243,6 @@ MIT © 2026 **BEKİR BERKAY BESLİ** — Tam metin için [LICENSE](LICENSE).
 
 - **Öğrenci:** BEKİR BERKAY BESLİ
 - **Öğrenci No:** 23080410039
-- **E-posta:** bekirberkay@example.com
+- **E-posta:** bekirberkaybesli1@gmail.com
 - **Ders:** NoSQL Veritabanı Sistemleri
 - **Kurum:** Bitlis Eren Üniversitesi — Mühendislik-Mimarlık Fakültesi
-
----
-
-<sub>🤖 Bu projede [Claude Code](https://claude.com/claude-code), [Cursor](https://cursor.sh) gibi AI asistanları kullanılmış olabilir. Tüm mimari kararlar, şema seçimleri ve kullanım tercihleri öğrenci tarafından yapılmıştır ve sunumda savunulacaktır.</sub>
