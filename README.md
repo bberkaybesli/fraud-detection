@@ -28,7 +28,7 @@
 - **Proje Kodu:** P10
 - **Proje Adı:** Fraud Detection (Dolandırıcılık)
 - **Zorluk:** Zor
-- **Repo:** https://github.com/bekirberkay/fraud-detection
+- **Repo:** https://github.com/bberkaybesli/fraud-detection
 
 > Bu 10 satırlık kimlik bloğu zorunludur. Teslim kontrolünde ilk bakılan kısım burasıdır.
 
@@ -124,7 +124,7 @@ open http://localhost:7474        # Neo4j Browser  (opsiyonel)
 
 ```bash
 # 1) Repo'yu klonla
-git clone https://github.com/bekirberkay/fraud-detection.git
+git clone https://github.com/bberkaybesli/fraud-detection.git
 cd fraud-detection
 
 # 2) Environment dosyası

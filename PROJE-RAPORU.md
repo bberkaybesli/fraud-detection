@@ -47,7 +47,7 @@
 | Kategori | Finans / Güvenlik |
 | Hedef Kullanıcı | Banka güvenlik ekipleri, fraud analistleri, MASAK yetkilileri |
 | Ana NoSQL Teknolojisi | Neo4j — Graf DB; Redis — Cache / Blacklist |
-| GitHub | https://github.com/bekirberkay/fraud-detection |
+| GitHub | https://github.com/bberkaybesli/fraud-detection |
 | Canlı Demo (varsa) | Yok |
 | Demo Kullanıcı | Email: `admin` · Şifre: `admin123` |
 | Docker Compose | ✅ tek komutla kalkıyor |
