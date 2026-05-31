@@ -11,10 +11,6 @@
 ![Lisans](https://img.shields.io/badge/License-MIT-green)
 ![Durum](https://img.shields.io/badge/Durum-Development-yellow)
 
-<!-- Repository hazır olduktan sonra ekleyin:
-![CI](https://github.com/{{KULLANICI_ADI}}/{{REPO_ADI}}/actions/workflows/ci.yml/badge.svg)
-![Codecov](https://codecov.io/gh/{{KULLANICI_ADI}}/{{REPO_ADI}}/branch/main/graph/badge.svg)
--->
 
 ---
 
@@ -107,7 +103,6 @@ open http://localhost:7474        # Neo4j Browser  (opsiyonel)
                                           └──────────────┘
 ```
 
-[*Detaylı mimari diyagramı `repo/docs/diagrams/architecture.png` altında*]
 
 [Mimari, ADR'lar ve veri akışı →](PROJE-RAPORU.md#8-sistem-mimarisi)
 

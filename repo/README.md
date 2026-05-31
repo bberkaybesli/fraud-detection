@@ -262,9 +262,9 @@ Bu proje NoSQL Veritabanı Sistemleri dersi kapsamında akademik amaçlı geliş
 
 ## 👤 İletişim
 
-**Öğrenci:** [Ad Soyad]  
-**E-posta:** [email@example.com]  
-**GitHub:** [github.com/username]
+**Öğrenci:** BEKİR BERKAY BESLİ  
+**E-posta:** bekirberkaybesli1@gmail.com
+**GitHub:** https://github.com/bberkaybesli/fraud-detection
 
 ---
 
