@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraud Detection System - Dashboard</title>
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Premium Dark Theme CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Fraud Detection System</h1>
+            <p>NoSQL Veritabanı Sistemleri - Finansal Dolandırıcılık Tespit Sistemi</p>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-card">
+                <div class="status-icon healthy" id="neo4j-status">
+                    <span>📊</span>
+                </div>
+                <div class="status-info">
+                    <h3>Neo4j Graph DB</h3>
+                    <p id="neo4j-text">Kontrol ediliyor...</p>
+                </div>
+            </div>
+            <div class="status-card">
+                <div class="status-icon healthy" id="redis-status">
+                    <span>⚡</span>
+                </div>
+                <div class="status-info">
+                    <h3>Redis Cache</h3>
+                    <p id="redis-text">Kontrol ediliyor...</p>
+                </div>
+            </div>
+            <div class="status-card">
+                <div class="status-icon healthy" id="backend-status">
+                    <span>🚀</span>
+                </div>
+                <div class="status-info">
+                    <h3>Backend API</h3>
+                    <p id="backend-text">Kontrol ediliyor...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="card">
+                <h2>🔍 İşlem Fraud Kontrolü</h2>
+                <form id="transaction-form">
+                    <div class="form-group">
+                        <label>İşlem ID</label>
+                        <input type="text" id="tx-id" placeholder="TX-001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Gönderen Hesap</label>
+                        <input type="text" id="sender" placeholder="ACC-001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Alıcı Hesap</label>
+                        <input type="text" id="recipient" placeholder="ACC-002" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tutar (TL)</label>
+                        <input type="number" id="amount" placeholder="5000" required>
+                    </div>
+                    <button type="submit" class="btn">Fraud Kontrolü Yap</button>
+                </form>
+                <div class="loading" id="tx-loading">
+                    <div class="spinner"></div>
+                    <p>İşlem kontrol ediliyor...</p>
+                </div>
+                <div class="result" id="tx-result"></div>
+            </div>
+
+            <div class="card">
+                <h2>📊 Dashboard İstatistikleri</h2>
+                <button class="btn btn-secondary" onclick="loadDashboard()">İstatistikleri Yükle</button>
+                <div class="loading" id="dashboard-loading">
+                    <div class="spinner"></div>
+                    <p>Veriler yükleniyor...</p>
+                </div>
+                <div class="stats-grid" id="dashboard-stats" style="display: none;">
+                    <div class="stat-item">
+                        <div class="label">Toplam Hesap</div>
+                        <div class="value" id="total-accounts">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="label">Toplam İşlem</div>
+                        <div class="value" id="total-transactions">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="label">Şüpheli İşlem</div>
+                        <div class="value" id="suspicious-transactions">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="label">Blacklist</div>
+                        <div class="value" id="blacklisted-accounts">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔎 Fraud Analizi</h2>
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('cycles')">Döngü Tespiti</button>
+                <button class="tab" onclick="switchTab('smurfing')">Smurfing Tespiti</button>
+                <button class="tab" onclick="switchTab('blacklist')">Blacklist</button>
+            </div>
+
+            <div class="tab-content active" id="cycles-tab">
+                <button class="btn" onclick="loadCycles()">Döngüleri Listele</button>
+                <div class="loading" id="cycles-loading">
+                    <div class="spinner"></div>
+                    <p>Döngüler aranıyor...</p>
+                </div>
+                <div id="cycles-result"></div>
+            </div>
+
+            <div class="tab-content" id="smurfing-tab">
+                <button class="btn" onclick="loadSmurfing()">Smurfing Adaylarını Listele</button>
+                <div class="loading" id="smurfing-loading">
+                    <div class="spinner"></div>
+                    <p>Smurfing kalıpları aranıyor...</p>
+                </div>
+                <div id="smurfing-result"></div>
+            </div>
+
+            <div class="tab-content" id="blacklist-tab">
+                <button class="btn" onclick="loadBlacklist()">Blacklist'i Görüntüle</button>
+                <div class="loading" id="blacklist-loading">
+                    <div class="spinner"></div>
+                    <p>Blacklist yükleniyor...</p>
+                </div>
+                <div id="blacklist-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let authToken = null;
+
+        // Sayfa yüklendiğinde sistem durumunu kontrol et
+        window.addEventListener('DOMContentLoaded', () => {
+            checkSystemHealth();
+            autoLogin();
+        });
+
+        // Otomatik login
+        async function autoLogin() {
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'admin', password: 'admin123' })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    authToken = data.data.token;
+                    console.log('✅ Otomatik login başarılı');
+                }
+            } catch (error) {
+                console.error('❌ Login hatası:', error);
+            }
+        }
+
+        // Sistem sağlık kontrolü
+        async function checkSystemHealth() {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+
+                if (data.success) {
+                    updateStatus('neo4j', data.data.neo4j === 'up' ? 'healthy' : 'error', data.data.neo4j);
+                    updateStatus('redis', data.data.redis === 'up' ? 'healthy' : 'error', data.data.redis);
+                    updateStatus('backend', 'healthy', 'Çalışıyor');
+                }
+            } catch (error) {
+                updateStatus('neo4j', 'error', 'Bağlantı Yok');
+                updateStatus('redis', 'error', 'Bağlantı Yok');
+                updateStatus('backend', 'error', 'Bağlantı Yok');
+            }
+        }
+
+        function updateStatus(service, status, text) {
+            const icon = document.getElementById(`${service}-status`);
+            const textEl = document.getElementById(`${service}-text`);
+
+            icon.className = `status-icon ${status}`;
+            textEl.textContent = text === 'up' ? 'Çalışıyor' : text;
+        }
+
+        // İşlem fraud kontrolü
+        document.getElementById('transaction-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const loading = document.getElementById('tx-loading');
+            const result = document.getElementById('tx-result');
+
+            loading.classList.add('active');
+            result.style.display = 'none';
+
+            const txData = {
+                tx_id: document.getElementById('tx-id').value,
+                sender: document.getElementById('sender').value,
+                recipient: document.getElementById('recipient').value,
+                amount: parseFloat(document.getElementById('amount').value)
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/transactions/check`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': 'bank-api-key-12345'
+                    },
+                    body: JSON.stringify(txData)
+                });
+
+                const data = await response.json();
+                loading.classList.remove('active');
+
+                if (data.success) {
+                    const fraudScore = data.data.fraud_score;
+                    const decision = data.data.decision;
+
+                    let scoreClass = 'low';
+                    let resultClass = 'success';
+
+                    if (fraudScore >= 70) {
+                        scoreClass = 'high';
+                        resultClass = 'error';
+                    } else if (fraudScore >= 40) {
+                        scoreClass = 'medium';
+                        resultClass = 'warning';
+                    }
+
+                    result.className = `result ${resultClass}`;
+                    result.innerHTML = `
+                        <h3>Fraud Kontrolü Tamamlandı</h3>
+                        <div class="fraud-score ${scoreClass}">${fraudScore}</div>
+                        <p><strong>Karar:</strong> <span class="badge ${decision === 'accept' ? 'success' : (decision === 'review' ? 'warning' : 'danger')}">${decision === 'accept' ? 'ONAYLANDI' : (decision === 'review' ? 'İNCELEMEDE' : 'REDDEDİLDİ')}</span></p>
+                        <p><strong>Tespit Edilen Sinyaller:</strong></p>
+                        <pre>${JSON.stringify(data.data.reasons || data.data.signals, null, 2)}</pre>
+                    `;
+                    result.style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'Bilinmeyen hata');
+                }
+            } catch (error) {
+                loading.classList.remove('active');
+                result.className = 'result error';
+                result.innerHTML = `<h3>❌ Hata</h3><p>${error.message}</p>`;
+                result.style.display = 'block';
+            }
+        });
+
+        // Dashboard yükle
+        async function loadDashboard() {
+            const loading = document.getElementById('dashboard-loading');
+            const stats = document.getElementById('dashboard-stats');
+
+            loading.classList.add('active');
+            stats.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_URL}/admin/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+                loading.classList.remove('active');
+
+                if (data.success) {
+                    document.getElementById('total-accounts').textContent = "1000+";
+                    document.getElementById('total-transactions').textContent = data.data.transactions ? data.data.transactions.total : 0;
+                    document.getElementById('suspicious-transactions').textContent = data.data.transactions ? (data.data.transactions.rejected + data.data.transactions.review) : 0;
+                    document.getElementById('blacklisted-accounts').textContent = data.data.blacklist ? data.data.blacklist.accounts : 0;
+                    stats.style.display = 'grid';
+                }
+            } catch (error) {
+                loading.classList.remove('active');
+                alert('Dashboard yüklenemedi: ' + error.message);
+            }
+        }
+
+        // Döngüleri yükle
+        async function loadCycles() {
+            const loading = document.getElementById('cycles-loading');
+            const result = document.getElementById('cycles-result');
+
+            loading.classList.add('active');
+            result.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_URL}/fraud/cycles`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+                loading.classList.remove('active');
+
+                if (data.success && data.data.cycles && data.data.cycles.length > 0) {
+                    result.innerHTML = '<h3>Tespit Edilen Döngüler:</h3>';
+                    data.data.cycles.forEach((cycle, index) => {
+                        result.innerHTML += `
+                            <div class="list-item danger">
+                                <strong>Döngü ${index + 1}:</strong> ${cycle.path.join(' → ')}
+                                <span class="badge danger">Toplam: ${cycle.total_amount.toLocaleString('tr-TR')} TL</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    result.innerHTML = '<p style="text-align: center; color: #10b981; padding: 20px;">✅ Döngü tespit edilmedi</p>';
+                }
+            } catch (error) {
+                loading.classList.remove('active');
+                result.innerHTML = `<p style="color: #ef4444;">❌ Hata: ${error.message}</p>`;
+            }
+        }
+
+        // Smurfing yükle
+        async function loadSmurfing() {
+            const loading = document.getElementById('smurfing-loading');
+            const result = document.getElementById('smurfing-result');
+
+            loading.classList.add('active');
+            result.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_URL}/fraud/smurfing`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+                loading.classList.remove('active');
+
+                if (data.success && data.data.patterns && data.data.patterns.length > 0) {
+                    result.innerHTML = '<h3>Smurfing Adayları:</h3>';
+                    data.data.patterns.forEach(account => {
+                        result.innerHTML += `
+                            <div class="list-item warning">
+                                <strong>${account.account}</strong>
+                                <span class="badge warning">${account.tx_count} işlem</span>
+                                <span class="badge warning">${account.total_amount.toLocaleString('tr-TR')} TL</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    result.innerHTML = '<p style="text-align: center; color: #10b981; padding: 20px;">✅ Smurfing tespit edilmedi</p>';
+                }
+            } catch (error) {
+                loading.classList.remove('active');
+                result.innerHTML = `<p style="color: #ef4444;">❌ Hata: ${error.message}</p>`;
+            }
+        }
+
+        // Blacklist yükle
+        async function loadBlacklist() {
+            const loading = document.getElementById('blacklist-loading');
+            const result = document.getElementById('blacklist-result');
+
+            loading.classList.add('active');
+            result.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_URL}/admin/blacklist`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+                loading.classList.remove('active');
+
+                if (data.success && data.data.accounts && data.data.accounts.length > 0) {
+                    result.innerHTML = '<h3>Blacklist Hesapları:</h3>';
+                    data.data.accounts.forEach(account => {
+                        result.innerHTML += `
+                            <div class="list-item danger">
+                                <strong>${account}</strong>
+                                <span class="badge danger">Blacklist</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    result.innerHTML = '<p style="text-align: center; color: #10b981; padding: 20px;">✅ Blacklist boş</p>';
+                }
+            } catch (error) {
+                loading.classList.remove('active');
+                result.innerHTML = `<p style="color: #ef4444;">❌ Hata: ${error.message}</p>`;
+            }
+        }
+
+        // Tab değiştir
+        function switchTab(tabName) {
+            // Tüm tabları gizle
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // Seçili tabı göster
+            event.target.classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+    </script>
+</body>
+
+</html>
